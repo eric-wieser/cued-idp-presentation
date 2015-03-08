@@ -3,11 +3,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MathBox - Example: Axis labeling.</title>
+  <title>MathBox - IDP color categorization</title>
 
-  <!--
-    This example shows labelling of axes.
-  -->
 
   <script type="text/javascript" charset="utf-8" src="mathbox/domready.js"></script>
   <script type="text/javascript" charset="utf-8" src="mathbox/mathbox.js"></script>
@@ -34,7 +31,7 @@
       lightblue = 0x8bb8ff,
       darkblue = 0x17408f,
       surfacered = 0xdf5000,
-      purple = 0xd040b0,
+      darkpurple = 0xd040b0,
       darkpurple = 0x95227c,
       royal = 0x5528A0,
       gold = 0xefc040,
@@ -55,7 +52,7 @@
   };
 
   var normal = function(μ, σ2) {
-    σ2 = 4*σ2
+    // σ2 = 4*σ2
     var σ = Math.sqrt(σ2);
     var res = function(x) {
       return standardNormal((x - μ) / σ) / σ;
@@ -66,7 +63,7 @@
   };
 
   var normal2D = function(n1, n2, cov) {
-    cov = 4*cov
+    // cov = 4*cov
     var det_Σ = (n1.σ2 * n2.σ2 - cov*cov);
     return function(x1, x2) {
       x1 -= n1.μ;
@@ -95,13 +92,13 @@
 
   var fixClip = function(d) {
     if(d.brown > d.white && d.brown > d.tasty) {
-      d.white = d.tasty = -0.001;
+      d.white = d.tasty = -0.0002;
     }
     else if(d.white > d.tasty && d.white > d.brown) {
-      d.tasty = d.brown = -0.001;
+      d.tasty = d.brown = -0.0002;
     }
     else if(d.tasty > d.brown && d.tasty > d.white) {
-      d.brown = d.white = -0.001;
+      d.brown = d.white = -0.0002;
     }
     return d;
   }
@@ -126,7 +123,7 @@
       // Cartesian viewport
       .viewport({
         type: 'cartesian',
-        range: [[0, 255], [0, 0.1], [0, 255]],
+        range: [[0, 256], [0, 0.1], [0, 256]],
         scale: [1.5, 1, 1.5],
       })
       .camera({
@@ -137,7 +134,7 @@
       .transition(300)
   }
 
-  var all_domain = [[0, 255], [0, 255]];
+  var all_domain = [[0, 256], [0, 256]];
   var small_domain = [[32, 128], [64, 160]];
 
   window.mathboxScript = [
@@ -148,17 +145,18 @@
         color: darkgray,
         lineWidth: 2,
         size: .05,
-        tickUnit: 8,
+        ticks: 4,
+        tickUnit: 64,
         tickScale: 2,
         labels: true,
+        decimals: 3
       }],
       ['add', 'axis', {
+        id: 'vert-axis',
         axis: 1,
         color: darkgray,
         lineWidth: 2,
-        size: .05,
-        tickUnit: 8,
-        tickScale: 2
+        size: .05
       }]
     ],
     [
@@ -184,7 +182,7 @@
       }],
       ['add', 'curve', {
         id: 'tasty-l',
-        color: purple,
+        color: darkpurple,
         domain: [0, 255],
         n: 256,
         expression: function(x) {
@@ -198,9 +196,11 @@
         color: darkgray,
         lineWidth: 2,
         size: .05,
-        tickUnit: 32,
+        tickUnit: 64,
         tickScale: 2,
+        ticks: 4,
         labels: true,
+        decimals: 3
       }],
       ['animate', 'camera', {
         orbit: 5,
@@ -229,7 +229,7 @@
       }],
       ['add', 'curve', {
         id: 'tasty-lb',
-        color: purple,
+        color: darkpurple,
         domain: [0, 0],
         n: 256,
         expression: function(x) {
@@ -270,7 +270,7 @@
         opacity: 0.75,
         line: true,
         id: 'tasty-s',
-        color: purple,
+        color: darkpurple,
         domain: [all_domain[0], [0, 0]],
         n: [64, 64],
         expression: function(u, v) {
@@ -318,22 +318,13 @@
       }]
     ],
     [
-      ['animate', 'viewport', {
-        range: [small_domain[0], [0, 0.1], small_domain[1]],
-      }],
-
-      ['animate', '#brown-s', { domain: small_domain }],
-      ['animate', '#none-s', { domain: small_domain }],
-      ['animate', '#white-s', { domain: small_domain }],
-      ['animate', '#tasty-s', { domain: small_domain }],
-    ],
-    [
+      ['remove', '#vert-axis'],
       ['animate', 'camera', {
         orbit: 5,
-        phi: τ*2,
-        theta: τ/16,
+        phi: τ / 2,
+        theta: τ/4,
       }, {
-        duration: 10000,
+        duration: 3000,
       }],
     ]
 
