@@ -1,0 +1,442 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MathBox - Example: Axis labeling.</title>
+
+  <!--
+    This example shows labelling of axes.
+  -->
+
+  <script type="text/javascript" charset="utf-8" src="mathbox/domready.js"></script>
+  <script type="text/javascript" charset="utf-8" src="mathbox/mathbox.js"></script>
+
+  <script type="text/javascript" charset="utf-8">
+    DomReady.ready(function () {
+      if (location.href.match(/^file:/)) {
+        document.getElementById('info').style.opacity = 1;
+        document.getElementById('info').innerHTML = "Sorry. This example does not work when accessed using file://. Please use an http:// host and try again.";
+      }
+    });
+  </script>
+
+  <script type="text/javascript" charset="utf-8">
+
+  var brown = 0x924000,
+      orangered = 0xc03000,
+      red = 0xc02050,
+      green = 0x50c020,
+      inside = 0xf9ffe8,
+      darkgreen = 0x509000,
+      darkergreen = 0x284800,
+      blue = 0x3080ff,
+      lightblue = 0x8bb8ff,
+      darkblue = 0x17408f,
+      surfacered = 0xdf5000,
+      purple = 0xd040b0,
+      darkpurple = 0x95227c,
+      royal = 0x5528A0,
+      gold = 0xefc040,
+      slate = 0x5070A0,
+      darkslate = 0x45628d,
+      cyan = 0x30A0B0,
+      darkcyan = 0x24876f,
+      lightgray = 0xe0e0e0;
+      gray = 0xc0c0c0;
+      darkgray = 0xa0a0a0,
+      orange = 0xFF9703,
+      darkorange = 0xc46a02,
+      white = 0xffffff,
+      black = 0x404040;
+
+  var standardNormal = function(z) {
+    return 1 / Math.sqrt(2*π) * Math.exp(-z*z / 2)
+  };
+
+  var normal = function(μ, σ2) {
+    σ2 = 4*σ2
+    var σ = Math.sqrt(σ2);
+    var res = function(x) {
+      return standardNormal((x - μ) / σ) / σ;
+    };
+    res.μ = μ;
+    res.σ2 = σ2;
+    return res;
+  };
+
+  var normal2D = function(n1, n2, cov) {
+    cov = 4*cov
+    var det_Σ = (n1.σ2 * n2.σ2 - cov*cov);
+    return function(x1, x2) {
+      x1 -= n1.μ;
+      x2 -= n2.μ;
+      var r_squared = ((x1*x1*n2.σ2) + (x2*x2*n1.σ2) - 2*(x2*x1*cov)) / det_Σ;
+      return standardNormal(Math.sqrt(r_squared)) / Math.sqrt(det_Σ * 2*π);
+    }
+  }
+
+  var noneRedNormal = normal(68.9, 1.67368421053);
+  var noneBlueNormal = normal(94.95, 0.997368421053);
+  var noneNormal = normal2D(noneRedNormal, noneBlueNormal, 0.573684210526);
+
+  var whiteRedNormal = normal(100.7, 36.0);
+  var whiteBlueNormal = normal(149.3, 10.8);
+  var whiteNormal = normal2D(whiteRedNormal, whiteBlueNormal, 16);
+
+  var brownRedNormal = normal(85.55, 71.1);
+  var brownBlueNormal = normal(122.15, 21.0);
+  var brownNormal = normal2D(brownRedNormal, brownBlueNormal, 38);
+
+  var tastyRedNormal = normal(73.05, 32.3657894737);
+  var tastyBlueNormal = normal(115.0, 34.4210526316);
+  var tastyNormal = normal2D(tastyRedNormal, tastyBlueNormal, 6);
+
+
+  var fixClip = function(d) {
+    if(d.brown > d.white && d.brown > d.tasty) {
+      d.white = d.tasty = -0.001;
+    }
+    else if(d.white > d.tasty && d.white > d.brown) {
+      d.tasty = d.brown = -0.001;
+    }
+    else if(d.tasty > d.brown && d.tasty > d.white) {
+      d.brown = d.white = -0.001;
+    }
+    return d;
+  }
+  var allNorms = function(r, b) {
+    return fixClip({
+      brown: brownNormal(r, b),
+      white: whiteNormal(r, b),
+      tasty: tastyNormal(r, b),
+    });
+  }
+  var allNormsNoCo = function(r, b) {
+    return fixClip({
+      brown: brownRedNormal(r) * brownBlueNormal(b),
+      white: whiteRedNormal(r) * whiteBlueNormal(b),
+      tasty: tastyRedNormal(r) * tastyBlueNormal(b),
+    });
+  }
+
+  function mathboxSetup() {
+    // Viewport camera/setup
+    mathbox
+      // Cartesian viewport
+      .viewport({
+        type: 'cartesian',
+        range: [[0, 255], [0, 0.1], [0, 255]],
+        scale: [1.5, 1, 1.5],
+      })
+      .camera({
+        orbit: 3.5,
+        phi: τ/4,
+        theta: 0,
+      })
+      .transition(300)
+  }
+
+  var all_domain = [[0, 255], [0, 255]];
+  var small_domain = [[32, 128], [64, 160]];
+
+  window.mathboxScript = [
+    // Nothing
+    [
+      ['add', 'axis', {
+        axis: 0,
+        color: darkgray,
+        lineWidth: 2,
+        size: .05,
+        tickUnit: 8,
+        tickScale: 2,
+        labels: true,
+      }],
+      ['add', 'axis', {
+        axis: 1,
+        color: darkgray,
+        lineWidth: 2,
+        size: .05,
+        tickUnit: 8,
+        tickScale: 2
+      }]
+    ],
+    [
+      ['add', 'curve', {
+        id: 'brown-l',
+        color: brown,
+        domain: [0, 255],
+        n: 256,
+        expression: function(x) {
+          return [x, brownRedNormal(x), 0];
+        }
+      }]
+    ],
+    [
+      ['add', 'curve', {
+        id: 'white-l',
+        color: gray,
+        domain: [0, 255],
+        n: 256,
+        expression: function(x) {
+          return [x, whiteRedNormal(x), 0];
+        }
+      }],
+      ['add', 'curve', {
+        id: 'tasty-l',
+        color: purple,
+        domain: [0, 255],
+        n: 256,
+        expression: function(x) {
+          return [x, tastyRedNormal(x), 0];
+        }
+      }]
+    ],
+    [
+      ['add', 'axis', {
+        axis: 2,
+        color: darkgray,
+        lineWidth: 2,
+        size: .05,
+        tickUnit: 32,
+        tickScale: 2,
+        labels: true,
+      }],
+      ['animate', 'camera', {
+        orbit: 5,
+        phi: τ/4 - τ/16,
+        theta: τ/16,
+      }, {
+        duration: 2000,
+      }],
+      ['add', 'curve', {
+        id: 'brown-lb',
+        color: brown,
+        domain: [0, 0],
+        n: 256,
+        expression: function(x) {
+          return [0, brownBlueNormal(x), x];
+        }
+      }],
+      ['add', 'curve', {
+        id: 'white-lb',
+        color: gray,
+        domain: [0, 0],
+        n: 256,
+        expression: function(x) {
+          return [0, whiteBlueNormal(x), x];
+        }
+      }],
+      ['add', 'curve', {
+        id: 'tasty-lb',
+        color: purple,
+        domain: [0, 0],
+        n: 256,
+        expression: function(x) {
+          return [0, tastyBlueNormal(x), x];
+        }
+      }],
+
+      ['animate', '#brown-lb', {domain: [0, 255]}, {duration: 2000}],
+      ['animate', '#white-lb', {domain: [0, 255]}, {duration: 2000}],
+      ['animate', '#tasty-lb', {domain: [0, 255]}, {duration: 2000}],
+    ],
+    [
+      ['add', 'surface', {
+        opacity: 0.75,
+        line: true,
+        id: 'brown-s',
+        color: brown,
+        domain: [all_domain[0], [0, 0]],
+        n: [64, 64],
+        expression: function(u, v) {
+          return [u, allNormsNoCo(u, v).brown, v];
+        }
+      }],
+
+      ['add', 'surface', {
+        opacity: 0.75,
+        line: true,
+        id: 'white-s',
+        color: gray,
+        domain: [all_domain[0], [0, 0]],
+        n: [64, 64],
+        expression: function(u, v) {
+          return [u, allNormsNoCo(u, v).white, v];
+        }
+      }],
+
+      ['add', 'surface', {
+        opacity: 0.75,
+        line: true,
+        id: 'tasty-s',
+        color: purple,
+        domain: [all_domain[0], [0, 0]],
+        n: [64, 64],
+        expression: function(u, v) {
+          return [u, allNormsNoCo(u, v).tasty, v];
+        }
+      }],
+
+
+      ['animate', '#brown-s', {domain: all_domain}],
+      ['animate', '#white-s', {domain: all_domain}],
+      ['animate', '#tasty-s', {domain: all_domain}],
+    ],
+    [
+      ['remove', '#brown-l'],
+      ['remove', '#white-l'],
+      ['remove', '#tasty-l'],
+      ['remove', '#brown-lb'],
+      ['remove', '#white-lb'],
+      ['remove', '#tasty-lb'],
+      ['animate', '#brown-s', {
+        expression: function(u, v) {
+          return [u, allNorms(u, v).brown, v];
+        }
+      }],
+      ['animate', '#none-s', {
+        expression: function(u, v) {
+          return [u, allNorms(u, v).none, v];
+        }
+      }],
+
+      ['animate', '#white-s', {
+        expression: function(u, v) {
+          return [u, allNorms(u, v).white, v];
+        }
+      }],
+
+      ['animate', '#tasty-s', {
+        expression: function(u, v) {
+          return [u, allNorms(u, v).tasty, v];
+        }
+      }],
+
+      ['animate', 'viewport', {
+        range: [all_domain[0], [0, 0.1], all_domain[1]],
+      }]
+    ],
+    [
+      ['animate', 'viewport', {
+        range: [small_domain[0], [0, 0.1], small_domain[1]],
+      }],
+
+      ['animate', '#brown-s', { domain: small_domain }],
+      ['animate', '#none-s', { domain: small_domain }],
+      ['animate', '#white-s', { domain: small_domain }],
+      ['animate', '#tasty-s', { domain: small_domain }],
+    ],
+    [
+      ['animate', 'camera', {
+        orbit: 5,
+        phi: τ*2,
+        theta: τ/16,
+      }, {
+        duration: 10000,
+      }],
+    ]
+
+  ]
+  /**
+   * Bootstrap
+   */
+  DomReady.ready(function() {
+    ThreeBox.preload([
+      'mathbox/snippets.glsl.html',
+    ], function (){
+
+
+      // MathBox boilerplate
+      var mathbox = window.mathbox = mathBox({
+        cameraControls: true,
+        cursor:         true,
+        controlClass:   ThreeBox.OrbitControls,
+        elementResize:  true,
+        fullscreen:     true,
+        screenshot:     true,
+        stats:          false,
+        scale:          1,
+      });
+
+      // mathbox.world().loop().hookPreRender(function() {
+      //   window.thetas = getThetas();
+      // });
+      mathbox.start();
+
+      // Set up director
+      var script = window.mathboxScript;
+      var director = window.director = new MathBox.Director(mathbox, script);
+
+      if(window.top != window) {
+        window.addEventListener("message", function(e) {
+          var d = e.data;
+          if(d.type == 'step') {
+            director.go(d.step);
+          }
+        }, false);
+      }
+      else {
+        // Arrow controls
+        // Controls for stand-alone
+        window.addEventListener('keydown', function (e) {
+          if (e.keyCode == 38 || e.keyCode == 37) director.back();
+          else if (e.keyCode == 40 || e.keyCode == 39) director.forward();
+          else {
+            return;
+          }
+
+          document.getElementById('info').style.opacity = '0';
+        });
+      }
+
+      mathboxSetup(mathbox);
+    });
+  });
+  </script>
+
+  <style type="text/css" media="screen">
+    html, body { height: 100%; }
+    body { margin: 0; padding: 0 }
+    canvas { display: block }
+
+    #info {
+      position: absolute;
+      left: 50%;
+      bottom: 50px;
+      z-index: 20;
+
+      width: 300px;
+      margin-left: -150px;
+
+      padding: 25px;
+      background: rgba(0, 0, 0, .5);
+      color: #fff;
+
+      font-family: "Lucida Grande", sans-serif;
+      font-size: 16px;
+      text-align: center;
+
+      border-radius: 3px;
+      text-shadow: 0px 1px 0px rgba(0, 0, 0, .4);
+
+      opacity: 0;
+    }
+
+    #info kbd {
+      background: #aaa;
+
+      box-shadow: 0px 1px 1px rgba(0, 0, 0, .3);
+      border-radius: 3px;
+      padding: 3px;
+      margin: 3px;
+
+      font-family: inherit;
+    }
+  </style>
+
+</head>
+<body>
+  <div id="info"></div>
+</body>
+</html>
