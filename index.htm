@@ -380,6 +380,10 @@
           document.getElementById('info').style.opacity = '0';
         });
       }
+      
+      if(window.top != window) {
+        document.getElementById('border').style.opacity = '0';
+      }
 
       mathboxSetup(mathbox);
     });
