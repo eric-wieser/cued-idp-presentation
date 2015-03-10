@@ -359,7 +359,7 @@
       var script = window.mathboxScript;
       var director = window.director = new MathBox.Director(mathbox, script);
 
-      if(window.top != window) {
+      if(false && window.top != window) {
         window.addEventListener("message", function(e) {
           var d = e.data;
           if(d.type == 'step') {
