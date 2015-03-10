@@ -381,8 +381,8 @@
         });
       }
       
-      if(window.top != window) {
-        document.getElementById('border').style.opacity = '0';
+      if(window.top == window) {
+        document.getElementById('border').style.visibility = 'visible';
       }
 
       mathboxSetup(mathbox);
@@ -393,6 +393,7 @@
   <style type="text/css" media="screen">
     html, body { height: 100%; }
     body { margin: 0;
+      background-color: transparent;
       padding: 0;
     }
     canvas { display: block }
@@ -406,6 +407,7 @@
       border-left: 20px solid #3f2f88;
       border-right: 20px solid #ef4524;
       z-index: 1;
+      visibility: hidden;
     }
 
     #info {
